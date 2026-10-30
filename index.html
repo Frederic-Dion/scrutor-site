@@ -1,0 +1,506 @@
+<!doctype html>
+<html lang="en" data-lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="description" content="Scrutor: field data, GIS, deforestation screening, assurance and MEL for agricultural supply chains. Frédéric Dion, Magog, Québec.">
+<style>:root{padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}body{margin:0}img{max-width:100%}[hidden]{display:none!important}</style>
+<title>Scrutor</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Schibsted+Grotesk:wght@500;700;800&family=Source+Serif+4:opsz,wght@8..60,400;8..60,600&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<style>
+/* Layout: field notebook. Hero = statement left, live plot check right. Sections = mono label column + content column. */
+:root {
+  --paper: #F1F4EF;
+  --surface: #FFFFFF;
+  --ink: #15201C;
+  --muted: #55635D;
+  --line: #CBD5CE;
+  --accent: #1D6A55;
+  --accent-soft: #DCEAE3;
+  --flag: #A35F0E;
+  --flag-soft: #F6E6CF;
+  --forest: #2F7A4F;
+  --font-display: "Schibsted Grotesk", "Helvetica Neue", Arial, sans-serif;
+  --font-body: "Source Serif 4", Georgia, "Times New Roman", serif;
+  --font-mono: "IBM Plex Mono", ui-monospace, "SFMono-Regular", Menlo, monospace;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --paper: #0F1513; --surface: #16201C; --ink: #E2E9E4; --muted: #9AA8A1; --line: #2B3732;
+    --accent: #6CC0A5; --accent-soft: #1C3029; --flag: #E2A956; --flag-soft: #3A2C17; --forest: #5FB383;
+    color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --paper: #0F1513; --surface: #16201C; --ink: #E2E9E4; --muted: #9AA8A1; --line: #2B3732;
+  --accent: #6CC0A5; --accent-soft: #1C3029; --flag: #E2A956; --flag-soft: #3A2C17; --forest: #5FB383;
+  color-scheme: dark;
+}
+
+/* language switch */
+:root:not([data-lang="fr"]) .fr { display: none !important; }
+:root[data-lang="fr"] .en { display: none !important; }
+
+* { box-sizing: border-box; }
+body {
+  background: var(--paper); color: var(--ink);
+  font-family: var(--font-body); font-size: 18px; line-height: 1.6;
+  -webkit-font-smoothing: antialiased;
+}
+body::before { content: ""; position: fixed; inset: 0 0 auto; height: env(safe-area-inset-top, 0px); z-index: 10; background: var(--paper); }
+a { color: var(--accent); text-underline-offset: 3px; }
+:focus-visible { outline: 2px solid var(--accent); outline-offset: 3px; border-radius: 2px; }
+
+.wrap {
+  max-width: 1120px; margin: 0 auto;
+  padding-left: max(20px, env(safe-area-inset-left, 0px));
+  padding-right: max(20px, env(safe-area-inset-right, 0px));
+}
+
+/* header */
+header.top {
+  position: sticky; top: env(safe-area-inset-top, 0px); z-index: 5;
+  background: color-mix(in srgb, var(--paper) 92%, transparent);
+  backdrop-filter: blur(6px);
+  border-bottom: 1px solid var(--line);
+}
+header.top .wrap { display: flex; align-items: center; gap: 24px; padding-block: 14px; }
+.brand { font-family: var(--font-display); font-weight: 800; font-size: 20px; letter-spacing: 0.02em; text-decoration: none; color: var(--ink); }
+.brand small { font-family: var(--font-mono); font-weight: 400; font-size: 12px; color: var(--muted); margin-left: 8px; letter-spacing: 0; }
+nav.links { display: flex; gap: 20px; margin-left: auto; font-family: var(--font-display); font-size: 15px; }
+nav.links a { color: var(--muted); text-decoration: none; }
+nav.links a:hover { color: var(--ink); }
+.lang {
+  font-family: var(--font-mono); font-size: 13px; display: inline-flex; border: 1px solid var(--line); border-radius: 999px; overflow: hidden;
+}
+.lang button { all: unset; cursor: pointer; padding: 4px 12px; color: var(--muted); }
+.lang button[aria-pressed="true"] { background: var(--ink); color: var(--paper); }
+@media (max-width: 760px) { nav.links { display: none; } .lang { margin-left: auto; } .brand small { display: none; } }
+
+/* hero */
+.hero .wrap { display: grid; grid-template-columns: 1.05fr 1fr; gap: 48px; padding-block: 64px 56px; align-items: center; }
+.hero .copy { min-width: 0; }
+.eyebrow { font-family: var(--font-mono); font-size: 13px; text-transform: uppercase; letter-spacing: 0.08em; color: var(--accent); margin: 0 0 18px; }
+h1 {
+  font-family: var(--font-display); font-weight: 800; font-size: clamp(36px, 5.2vw, 58px);
+  line-height: 1.05; letter-spacing: -0.02em; margin: 0 0 22px; text-wrap: balance;
+}
+.lede { font-size: 20px; color: var(--muted); max-width: 34em; margin: 0 0 28px; }
+.cta { display: flex; flex-wrap: wrap; gap: 12px; }
+.btn {
+  font-family: var(--font-display); font-weight: 700; font-size: 16px; text-decoration: none;
+  padding: 12px 20px; border-radius: 6px; border: 1.5px solid var(--ink); color: var(--ink); background: transparent; cursor: pointer;
+}
+.btn.solid { background: var(--ink); color: var(--paper); }
+.btn:hover { border-color: var(--accent); }
+.btn.solid:hover { background: var(--accent); border-color: var(--accent); }
+
+/* plot check panel */
+.check { background: var(--surface); border: 1px solid var(--line); border-radius: 10px; padding: 18px; min-width: 0; }
+.check-head { display: flex; justify-content: space-between; align-items: baseline; gap: 12px; font-family: var(--font-mono); font-size: 12px; color: var(--muted); margin-bottom: 10px; }
+.check-head strong { color: var(--ink); font-weight: 500; font-size: 13px; }
+.map { width: 100%; height: auto; display: block; border-radius: 6px; background: var(--paper); }
+.map .plot { fill: var(--accent-soft); stroke: var(--accent); stroke-width: 1.4; transition: fill .2s; }
+.map .plot:hover { fill: color-mix(in srgb, var(--accent) 30%, var(--accent-soft)); }
+.map .plot.flag { stroke: var(--flag); }
+.map .plot.gap { fill: var(--flag-soft); stroke: var(--flag); stroke-dasharray: 4 3; }
+.map .overlap { fill: url(#hatch); stroke: var(--flag); stroke-width: 1.6; }
+.map .forest { fill: url(#trees); stroke: var(--forest); stroke-width: 1; stroke-dasharray: 2 3; }
+.map text { font-family: var(--font-mono); font-size: 10px; fill: var(--ink); pointer-events: none; }
+.map text.f { fill: var(--forest); font-size: 9.5px; }
+.map .hatch-line { stroke: var(--flag); stroke-width: 1.4; }
+.map .tree { fill: var(--forest); opacity: .45; }
+.readout { list-style: none; margin: 14px 0 0; padding: 0; font-family: var(--font-mono); font-size: 13px; display: grid; gap: 6px; font-variant-numeric: tabular-nums; }
+.readout li { display: grid; grid-template-columns: 74px 1fr; gap: 10px; align-items: baseline; }
+.pill { font-size: 11px; text-transform: uppercase; letter-spacing: .06em; padding: 1px 8px; border-radius: 999px; text-align: center; }
+.pill.ok { background: var(--accent-soft); color: var(--accent); }
+.pill.warn { background: var(--flag-soft); color: var(--flag); }
+.note { font-family: var(--font-mono); font-size: 11.5px; color: var(--muted); margin: 12px 0 0; }
+
+@media (max-width: 900px) { .hero .wrap { grid-template-columns: 1fr; gap: 36px; padding-block: 44px 40px; } }
+
+/* sections */
+section.block { border-top: 1px solid var(--line); }
+section.block > .wrap { display: grid; grid-template-columns: 200px 1fr; gap: 40px; padding-block: 64px; }
+.label { font-family: var(--font-mono); font-size: 13px; text-transform: uppercase; letter-spacing: .08em; color: var(--muted); padding-top: 8px; }
+.body { min-width: 0; }
+h2 { font-family: var(--font-display); font-weight: 800; font-size: clamp(28px, 3.4vw, 38px); line-height: 1.1; letter-spacing: -0.015em; margin: 0 0 18px; text-wrap: balance; }
+h3 { font-family: var(--font-display); font-weight: 700; font-size: 20px; line-height: 1.25; margin: 0 0 8px; }
+.intro { max-width: 40em; color: var(--muted); margin: 0 0 36px; }
+@media (max-width: 760px) { section.block > .wrap { grid-template-columns: 1fr; gap: 8px; padding-block: 48px; } }
+
+.services { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 40px 48px; }
+.svc { min-width: 0; border-top: 2px solid var(--ink); padding-top: 16px; }
+.svc .tag { font-family: var(--font-mono); font-size: 12px; color: var(--accent); margin: 0 0 6px; }
+.svc p { margin: 0 0 10px; }
+.svc ul { margin: 0; padding-left: 18px; color: var(--muted); font-size: 16.5px; }
+.svc li { margin-bottom: 4px; }
+.svc .limit { font-size: 15px; color: var(--flag); font-family: var(--font-mono); margin-top: 10px; }
+@media (max-width: 760px) { .services { grid-template-columns: 1fr; gap: 32px; } }
+
+.method { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 28px 48px; }
+.method div { min-width: 0; }
+.method p { margin: 0; color: var(--muted); }
+.method .sample { display: inline-block; font-family: var(--font-mono); font-size: 14px; background: var(--surface); border: 1px dashed var(--line); padding: 1px 8px; border-radius: 4px; color: var(--ink); }
+@media (max-width: 760px) { .method { grid-template-columns: 1fr; } }
+
+.tools { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 32px 48px; margin-top: 8px; }
+.tools > div { min-width: 0; }
+.tools ul { list-style: none; padding: 0; margin: 0; font-family: var(--font-mono); font-size: 14.5px; display: grid; gap: 8px; }
+.tools li { border-bottom: 1px solid var(--line); padding-bottom: 8px; }
+.tools h3 { font-size: 16px; text-transform: uppercase; letter-spacing: .06em; color: var(--muted); margin-bottom: 12px; }
+@media (max-width: 760px) { .tools { grid-template-columns: 1fr; } }
+
+.ethics { background: var(--surface); }
+.ethics p { max-width: 40em; }
+.rules { display: grid; gap: 12px; margin: 24px 0 0; padding: 0; list-style: none; max-width: 44em; }
+.rules li { display: grid; grid-template-columns: 22px 1fr; gap: 10px; }
+.rules li::before { content: ""; width: 10px; height: 10px; margin-top: 9px; border: 2px solid var(--accent); transform: rotate(45deg); }
+
+.about p { max-width: 40em; margin: 0 0 16px; }
+.facts { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 24px; padding: 0; list-style: none; font-family: var(--font-mono); font-size: 13px; }
+.facts li { border: 1px solid var(--line); border-radius: 999px; padding: 4px 12px; color: var(--muted); }
+
+.contact .mail { display: flex; flex-wrap: wrap; align-items: center; gap: 12px; margin: 8px 0 18px; }
+.contact .addr { font-family: var(--font-mono); font-size: clamp(18px, 2.6vw, 24px); color: var(--ink); user-select: all; word-break: break-all; }
+.contact p { max-width: 40em; color: var(--muted); margin: 0; }
+#copyMsg { font-family: var(--font-mono); font-size: 13px; color: var(--accent); }
+
+footer { border-top: 1px solid var(--line); }
+footer .wrap { padding-block: 28px; display: flex; flex-wrap: wrap; justify-content: space-between; gap: 12px; font-family: var(--font-mono); font-size: 13px; color: var(--muted); }
+footer em { font-style: normal; color: var(--ink); }
+
+@media (prefers-reduced-motion: reduce) { * { transition: none !important; } }
+</style>
+
+</head>
+<body>
+<header class="top">
+  <div class="wrap">
+    <a class="brand" href="#top">SCRUTOR<small class="en">field data &amp; evidence</small><small class="fr">données terrain &amp; preuves</small></a>
+    <nav class="links" aria-label="Sections">
+      <a href="#services"><span class="en">Services</span><span class="fr">Services</span></a>
+      <a href="#method"><span class="en">Method</span><span class="fr">Méthode</span></a>
+      <a href="#ethics"><span class="en">Ethics</span><span class="fr">Éthique</span></a>
+      <a href="#about"><span class="en">About</span><span class="fr">Profil</span></a>
+      <a href="#contact"><span class="en">Contact</span><span class="fr">Contact</span></a>
+    </nav>
+    <div class="lang" role="group" aria-label="Language / Langue">
+      <button type="button" id="btnEn" aria-pressed="true">EN</button>
+      <button type="button" id="btnFr" aria-pressed="false">FR</button>
+    </div>
+  </div>
+</header>
+
+<main id="top">
+  <section class="hero">
+    <div class="wrap">
+      <div class="copy">
+        <p class="eyebrow"><span class="en">M&amp;E · GIS · deforestation screening</span><span class="fr">S&amp;E · SIG · analyse de déforestation</span></p>
+        <h1><span class="en">Data you can check, from the farm plot to the report.</span><span class="fr">Des données vérifiables, de la parcelle au rapport.</span></h1>
+        <p class="lede">
+          <span class="en">I help companies, cooperatives and programmes collect field data, map farm plots and screen them for deforestation. Then I turn it into evidence people can act on. Twelve years in cocoa, across Côte d'Ivoire, Ghana and Ecuador.</span>
+          <span class="fr">J'aide les entreprises, les coopératives et les programmes à collecter des données terrain, à cartographier les parcelles et à y repérer la déforestation. Puis j'en tire des preuves sur lesquelles agir. Douze ans dans le cacao, en Côte d'Ivoire, au Ghana et en Équateur.</span>
+        </p>
+        <div class="cta">
+          <a class="btn solid" href="#contact"><span class="en">Write to me</span><span class="fr">M'écrire</span></a>
+          <a class="btn" href="#services"><span class="en">See the services</span><span class="fr">Voir les services</span></a>
+        </div>
+      </div>
+
+      <figure class="check" aria-labelledby="checkTitle" style="margin:0">
+        <div class="check-head">
+          <strong id="checkTitle"><span class="en">Plot check</span><span class="fr">Contrôle des parcelles</span></strong>
+          <span>EPSG:4326 · 12 polygons</span>
+        </div>
+        <svg class="map" viewBox="0 0 400 300" role="img" aria-label="Illustrative map of twelve synthetic farm plots, with one overlap, one area gap and a forest reference zone">
+          <defs>
+            <pattern id="hatch" width="6" height="6" patternUnits="userSpaceOnUse" patternTransform="rotate(45)">
+              <line class="hatch-line" x1="0" y1="0" x2="0" y2="6"/>
+            </pattern>
+            <pattern id="trees" width="14" height="14" patternUnits="userSpaceOnUse">
+              <circle class="tree" cx="4" cy="4" r="2.6"/><circle class="tree" cx="11" cy="10" r="2.2"/>
+            </pattern>
+          </defs>
+          <polygon class="forest" points="300,0 400,0 400,138 362,150 322,112 292,58"/>
+          <text class="f" x="318" y="22">FOREST 2020</text>
+
+          <polygon class="plot" points="20,20 95,15 105,70 30,80"><title>P-01</title></polygon>
+          <polygon class="plot" points="110,18 190,25 185,85 108,75"><title>P-02</title></polygon>
+          <polygon class="plot" points="200,32 272,42 282,100 205,95"><title>P-03</title></polygon>
+          <polygon class="plot" points="25,95 100,88 110,160 35,170"><title>P-04</title></polygon>
+          <polygon class="plot" points="118,92 180,98 190,165 115,160"><title>P-05</title></polygon>
+          <polygon class="plot" points="200,108 270,112 280,175 205,180"><title>P-06</title></polygon>
+          <polygon class="plot flag" points="40,185 132,178 136,250 45,258"><title>P-07</title></polygon>
+          <polygon class="plot flag" points="114,190 200,195 195,265 110,255"><title>P-08</title></polygon>
+          <polygon class="overlap" points="114,190 132,188 135,250 111,253"><title>Overlap P-07 / P-08</title></polygon>
+          <polygon class="plot" points="215,195 300,190 310,255 220,262"><title>P-09</title></polygon>
+          <polygon class="plot" points="318,165 385,172 390,238 322,244"><title>P-10</title></polygon>
+          <polygon class="plot gap" points="330,256 362,253 365,284 333,287"><title>P-11</title></polygon>
+          <polygon class="plot" points="20,268 92,264 94,294 22,296"><title>P-12</title></polygon>
+
+          <text x="50" y="50">P-01</text><text x="135" y="52">P-02</text><text x="228" y="70">P-03</text>
+          <text x="52" y="132">P-04</text><text x="138" y="133">P-05</text><text x="226" y="147">P-06</text>
+          <text x="68" y="222">P-07</text><text x="150" y="230">P-08</text><text x="246" y="230">P-09</text>
+          <text x="340" y="210">P-10</text><text x="334" y="274">P-11</text><text x="44" y="284">P-12</text>
+        </svg>
+        <ul class="readout">
+          <li><span class="pill warn"><span class="en">Overlap</span><span class="fr">Chevauch.</span></span><span><span class="en">P-07 / P-08 share 0.3 ha</span><span class="fr">P-07 / P-08 partagent 0,3 ha</span></span></li>
+          <li><span class="pill warn"><span class="en">Area</span><span class="fr">Surface</span></span><span><span class="en">P-11 declared 4.0 ha, mapped 1.2 ha</span><span class="fr">P-11 déclarée 4,0 ha, mesurée 1,2 ha</span></span></li>
+          <li><span class="pill ok"><span class="en">Forest</span><span class="fr">Forêt</span></span><span><span class="en">0 plots inside the 2020 forest layer</span><span class="fr">0 parcelle dans la couche forêt 2020</span></span></li>
+          <li><span class="pill ok"><span class="en">Pass</span><span class="fr">Conforme</span></span><span><span class="en">9 of 12 plots need no follow-up</span><span class="fr">9 parcelles sur 12 sans suivi requis</span></span></li>
+        </ul>
+        <p class="note"><span class="en">Illustration only. Synthetic plots, not real farms.</span><span class="fr">Illustration seulement. Parcelles fictives, aucune vraie exploitation.</span></p>
+      </figure>
+    </div>
+  </section>
+
+  <section class="block" id="services">
+    <div class="wrap">
+      <div class="label"><span class="en">Services</span><span class="fr">Services</span></div>
+      <div class="body">
+        <h2><span class="en">The work I do every cocoa season, for organisations that need it done well.</span><span class="fr">Le travail que je fais à chaque saison cacaoyère, pour les organisations qui en ont besoin.</span></h2>
+        <div class="services">
+          <article class="svc">
+            <p class="tag">KoboToolbox · CLMRS · QA</p>
+            <h3><span class="en">Field data systems</span><span class="fr">Systèmes de données terrain</span></h3>
+            <p><span class="en">Forms that collect the right thing once, and checks that catch what slips through.</span><span class="fr">Des formulaires qui collectent la bonne information une seule fois, et des contrôles pour ce qui passe entre les mailles.</span></p>
+            <ul class="en">
+              <li>KoboToolbox forms with fixed choices, number checks and document uploads</li>
+              <li>Quality checks: duplicates, orphan IDs, impossible values</li>
+              <li>Partner files merged into one dataset, with a glossary</li>
+              <li>Child labour monitoring (CLMRS), household surveys, supplier questionnaires</li>
+            </ul>
+            <ul class="fr">
+              <li>Formulaires KoboToolbox avec choix fixes, contrôles de valeurs et dépôt de documents</li>
+              <li>Contrôles qualité : doublons, identifiants orphelins, valeurs impossibles</li>
+              <li>Fichiers des partenaires fusionnés en une seule base, avec un glossaire</li>
+              <li>Suivi du travail des enfants (SSRTE), enquêtes ménages, questionnaires fournisseurs</li>
+            </ul>
+          </article>
+
+          <article class="svc">
+            <p class="tag">QGIS · GeoJSON · KML</p>
+            <h3><span class="en">Maps and traceability</span><span class="fr">Cartographie et traçabilité</span></h3>
+            <p><span class="en">Plot polygons you can defend in front of a buyer or a verifier.</span><span class="fr">Des polygones de parcelles que vous pouvez défendre devant un acheteur ou un vérificateur.</span></p>
+            <ul class="en">
+              <li>Polygon checks: overlaps, self-intersections, area outliers, points recorded instead of polygons</li>
+              <li>Plots assigned to regions and districts</li>
+              <li>Maps for reports and for field teams</li>
+            </ul>
+            <ul class="fr">
+              <li>Contrôle des polygones : chevauchements, auto-intersections, superficies aberrantes, points au lieu de polygones</li>
+              <li>Rattachement des parcelles aux régions et départements</li>
+              <li>Cartes pour les rapports et pour les équipes terrain</li>
+            </ul>
+          </article>
+
+          <article class="svc">
+            <p class="tag">Public satellite data · LUC</p>
+            <h3><span class="en">Deforestation and land-use change screening</span><span class="fr">Déforestation et changement d'usage des terres</span></h3>
+            <p><span class="en">Your plots against public forest data and your cutoff date. Each alert says where it came from.</span><span class="fr">Vos parcelles croisées avec les données forestières publiques et votre date butoir. Chaque alerte dit d'où elle vient.</span></p>
+            <ul class="en">
+              <li>Source, forest definition, resolution and date stated for every result</li>
+              <li>Tree cover loss treated as a signal to check, not as proof</li>
+              <li>Land-use change data prepared for supply chain emissions accounting</li>
+            </ul>
+            <ul class="fr">
+              <li>Source, définition de la forêt, résolution et date indiquées pour chaque résultat</li>
+              <li>Une perte de couvert arboré est un signal à vérifier, pas une preuve</li>
+              <li>Données de changement d'usage des terres préparées pour le calcul des émissions de la chaîne d'approvisionnement</li>
+            </ul>
+          </article>
+
+          <article class="svc">
+            <p class="tag">Sampling · scoring · follow-up</p>
+            <h3><span class="en">Assurance and verification</span><span class="fr">Assurance et vérification</span></h3>
+            <p><span class="en">A check on whether the monitoring system does what its procedures say.</span><span class="fr">Vérifier que le système de suivi fait ce que ses procédures annoncent.</span></p>
+            <ul class="en">
+              <li>Field assurance design or review: sampling, checklists, scoring, corrective actions</li>
+              <li>Third-party verifications prepared and managed</li>
+              <li>A partner's monitoring compared with its own written procedures</li>
+            </ul>
+            <ul class="fr">
+              <li>Conception ou revue de l'assurance terrain : échantillonnage, grilles, notation, actions correctives</li>
+              <li>Préparation et pilotage des vérifications par tierce partie</li>
+              <li>Le suivi d'un partenaire comparé à ses propres procédures écrites</li>
+            </ul>
+          </article>
+
+          <article class="svc">
+            <p class="tag">Indicators · Power BI</p>
+            <h3><span class="en">Monitoring, evaluation and learning</span><span class="fr">Suivi, évaluation et apprentissage</span></h3>
+            <p><span class="en">Indicators the field can actually measure, and reports that say what the data does not cover.</span><span class="fr">Des indicateurs que le terrain peut vraiment mesurer, et des rapports qui disent ce que les données ne couvrent pas.</span></p>
+            <ul class="en">
+              <li>Results frameworks and indicator definitions</li>
+              <li>Alignment with sector frameworks such as ICI and the Cocoa &amp; Forests Initiative</li>
+              <li>Power BI dashboards built on documented queries</li>
+            </ul>
+            <ul class="fr">
+              <li>Cadres de résultats et fiches d'indicateurs</li>
+              <li>Alignement avec les cadres du secteur, comme l'ICI et l'Initiative Cacao et Forêts</li>
+              <li>Tableaux de bord Power BI sur des requêtes documentées</li>
+            </ul>
+          </article>
+
+          <article class="svc">
+            <p class="tag">EUDR · RDUE</p>
+            <h3><span class="en">EUDR preparation for smaller organisations</span><span class="fr">Préparation au RDUE pour les petites structures</span></h3>
+            <p><span class="en">For organisations without a sustainability team, a clear view of what data you have and what is missing.</span><span class="fr">Pour les structures sans équipe durabilité, une vue claire des données disponibles et manquantes.</span></p>
+            <ul class="en">
+              <li>Plot data, supplier evidence and a due diligence file put in order</li>
+              <li>Gaps listed with the next practical step for each one</li>
+            </ul>
+            <ul class="fr">
+              <li>Données de parcelles, preuves fournisseurs et dossier de diligence raisonnée mis en ordre</li>
+              <li>Manques listés, chacun avec une prochaine étape concrète</li>
+            </ul>
+            <p class="limit"><span class="en">Not legal advice. Not certification.</span><span class="fr">Ni avis juridique, ni certification.</span></p>
+          </article>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="block" id="method">
+    <div class="wrap">
+      <div class="label"><span class="en">Method</span><span class="fr">Méthode</span></div>
+      <div class="body">
+        <h2><span class="en">How I work</span><span class="fr">Ma façon de travailler</span></h2>
+        <div class="method">
+          <div>
+            <h3><span class="en">Start from the decision</span><span class="fr">Partir de la décision</span></h3>
+            <p><span class="en">First question: what must the data answer, and for whom? The form, the map and the dashboard follow from that.</span><span class="fr">Première question : à quoi les données doivent-elles répondre, et pour qui ? Le formulaire, la carte et le tableau de bord en découlent.</span></p>
+          </div>
+          <div>
+            <h3><span class="en">Keep the original</span><span class="fr">Garder l'original</span></h3>
+            <p><span class="en">I work from your native files and GIS formats. I log every change, so anyone can trace a figure back to its source.</span><span class="fr">Je travaille sur vos fichiers natifs et vos formats SIG. Je consigne chaque modification, pour que chacun puisse remonter d'un chiffre à sa source.</span></p>
+          </div>
+          <div>
+            <h3><span class="en">Show the gaps</span><span class="fr">Montrer les manques</span></h3>
+            <p><span class="en">A missing value never stays blank. It reads <span class="sample">data not available for this partner</span>. Every finding states its limits.</span><span class="fr">Une valeur absente ne reste jamais vide. Elle porte la mention <span class="sample">donnée non disponible pour ce partenaire</span>. Chaque constat précise ses limites.</span></p>
+          </div>
+          <div>
+            <h3><span class="en">Leave you able to do it again</span><span class="fr">Vous laisser autonome</span></h3>
+            <p><span class="en">Written methods, plus forms and queries you own. Next cocoa season, your team runs it without me.</span><span class="fr">Des méthodes écrites, des formulaires et des requêtes qui vous appartiennent. À la saison suivante, votre équipe le refait sans moi.</span></p>
+          </div>
+        </div>
+
+        <div class="tools">
+          <div>
+            <h3><span class="en">My tools, my licences</span><span class="fr">Mes outils, mes licences</span></h3>
+            <ul>
+              <li>QGIS</li>
+              <li>KoboToolbox</li>
+              <li>Power BI · Excel · Power Query</li>
+              <li>SQL</li>
+            </ul>
+          </div>
+          <div>
+            <h3><span class="en">Public data</span><span class="fr">Données publiques</span></h3>
+            <ul>
+              <li>Global Forest Watch <span class="en">tree cover loss</span><span class="fr">perte de couvert arboré</span></li>
+              <li>JRC Tropical Moist Forest</li>
+              <li>EU Forest Observatory <span class="en">2020 forest map</span><span class="fr">carte forestière 2020</span></li>
+              <li><span class="en">Open administrative boundaries</span><span class="fr">Limites administratives ouvertes</span></li>
+            </ul>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="block ethics" id="ethics">
+    <div class="wrap">
+      <div class="label"><span class="en">Ethics</span><span class="fr">Éthique</span></div>
+      <div class="body">
+        <h2><span class="en">Clear lines</span><span class="fr">Des lignes claires</span></h2>
+        <p><span class="en">I am also monitoring and evaluation manager in the sustainability team of a cocoa and chocolate company. Scrutor work happens outside that role, under these rules.</span><span class="fr">Je suis aussi responsable du suivi et de l'évaluation dans l'équipe durabilité d'une entreprise de cacao et de chocolat. Le travail de Scrutor se fait en dehors de ce rôle, selon ces règles.</span></p>
+        <ul class="rules">
+          <li><span><span class="en">I do not take work from my employer's clients or suppliers.</span><span class="fr">Je n'accepte pas de mandat des clients ou des fournisseurs de mon employeur.</span></span></li>
+          <li><span><span class="en">I never use my employer's data, software licences, platforms or contacts.</span><span class="fr">Je n'utilise jamais les données, les licences, les plateformes ni les contacts de mon employeur.</span></span></li>
+          <li><span><span class="en">Your data stays yours. I do not reuse it as a case study without written permission.</span><span class="fr">Vos données restent les vôtres. Je ne les réutilise pas comme étude de cas sans accord écrit.</span></span></li>
+          <li><span><span class="en">If a request comes close to the line, I say so on the first call.</span><span class="fr">Si une demande s'approche de la ligne, je le dis dès le premier appel.</span></span></li>
+        </ul>
+      </div>
+    </div>
+  </section>
+
+  <section class="block about" id="about">
+    <div class="wrap">
+      <div class="label"><span class="en">About</span><span class="fr">Profil</span></div>
+      <div class="body">
+        <h2>Frédéric Dion</h2>
+        <p><span class="en">I have worked on cocoa sustainability data since 2014. I lived in Côte d'Ivoire until the end of 2019. My work there covered child labour monitoring, traceability, village savings and loan associations, and cocoa swollen shoot virus.</span><span class="fr">Je travaille sur les données de durabilité du cacao depuis 2014. J'ai vécu en Côte d'Ivoire jusqu'à la fin de 2019. J'y ai travaillé sur le suivi du travail des enfants, la traçabilité, les associations villageoises d'épargne et de crédit (AVEC) et le swollen shoot du cacaoyer.</span></p>
+        <p><span class="en">I founded Scrutor at the end of 2019 and worked with cocoa and chocolate companies in 2020 and 2021. Today I live in Magog, Québec. I work remotely, in French and English.</span><span class="fr">J'ai fondé Scrutor à la fin de 2019 et j'ai accompagné des entreprises du cacao et du chocolat en 2020 et 2021. Aujourd'hui je vis à Magog, au Québec. Je travaille à distance, en français et en anglais.</span></p>
+        <ul class="facts">
+          <li>Côte d'Ivoire</li><li>Ghana</li><li><span class="en">Ecuador</span><span class="fr">Équateur</span></li>
+          <li><span class="en">Since 2014</span><span class="fr">Depuis 2014</span></li>
+          <li>FR · EN</li>
+        </ul>
+      </div>
+    </div>
+  </section>
+
+  <section class="block contact" id="contact">
+    <div class="wrap">
+      <div class="label"><span class="en">Contact</span><span class="fr">Contact</span></div>
+      <div class="body">
+        <h2><span class="en">Tell me what the data needs to answer.</span><span class="fr">Dites-moi à quoi vos données doivent répondre.</span></h2>
+        <div class="mail">
+          <span class="addr" id="addr">fdion@thescrutor.com</span>
+          <button type="button" class="btn" id="copyBtn"><span class="en">Copy address</span><span class="fr">Copier l'adresse</span></button>
+          <span id="copyMsg" aria-live="polite"></span>
+        </div>
+        <p><span class="en">A short description is enough: the commodity, the countries, the data you already have and the deadline.</span><span class="fr">Une courte description suffit : la filière, les pays, les données dont vous disposez et l'échéance.</span></p>
+      </div>
+    </div>
+  </section>
+</main>
+
+<footer>
+  <div class="wrap">
+    <span><em>scrūtor</em> <span class="en">(Latin): I examine closely.</span><span class="fr">(latin) : j'examine avec soin.</span></span>
+    <span>Scrutor · Magog, Québec · <span class="en">since 2019</span><span class="fr">depuis 2019</span></span>
+  </div>
+</footer>
+
+<script>
+(function () {
+  var root = document.documentElement;
+  var btnEn = document.getElementById('btnEn');
+  var btnFr = document.getElementById('btnFr');
+  function setLang(l) {
+    root.dataset.lang = l;
+    root.lang = l;
+    btnEn.setAttribute('aria-pressed', l === 'en');
+    btnFr.setAttribute('aria-pressed', l === 'fr');
+    try { localStorage.setItem('scrutor-lang', l); } catch (e) {}
+  }
+  var start = 'en';
+  if (location.hash === '#fr') start = 'fr';
+  else { try { start = localStorage.getItem('scrutor-lang') || 'en'; } catch (e) {} }
+  setLang(start === 'fr' ? 'fr' : 'en');
+  btnEn.addEventListener('click', function () { setLang('en'); });
+  btnFr.addEventListener('click', function () { setLang('fr'); });
+
+  var copyBtn = document.getElementById('copyBtn');
+  var msg = document.getElementById('copyMsg');
+  var addr = document.getElementById('addr');
+  function selectAddr() {
+    var r = document.createRange(); r.selectNodeContents(addr);
+    var s = window.getSelection(); s.removeAllRanges(); s.addRange(r);
+  }
+  copyBtn.addEventListener('click', function () {
+    var fr = root.dataset.lang === 'fr';
+    var p = navigator.clipboard && navigator.clipboard.writeText ? navigator.clipboard.writeText(addr.textContent) : Promise.reject();
+    p.then(function () { msg.textContent = fr ? 'Adresse copiée' : 'Address copied'; })
+     .catch(function () { selectAddr(); msg.textContent = fr ? 'Adresse sélectionnée, copiez-la' : 'Address selected, copy it'; });
+  });
+})();
+</script>
+</body>
+</html>
